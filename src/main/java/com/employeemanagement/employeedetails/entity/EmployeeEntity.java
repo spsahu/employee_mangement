@@ -1,14 +1,17 @@
 package com.employeemanagement.employeedetails.entity;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+import java.io.Serializable;
 
 @Table(name = "emp_table")
 @Entity
-public class EmployeeEntity {
+public class EmployeeEntity implements Serializable {
     @Column(name="emp_id")
     @Id
     Integer empId;

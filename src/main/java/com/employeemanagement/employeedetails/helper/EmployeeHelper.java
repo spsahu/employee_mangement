@@ -4,7 +4,6 @@ import com.employeemanagement.employeedetails.dto.EmployeeDto;
 import com.employeemanagement.employeedetails.entity.EmployeeEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -15,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -78,10 +76,10 @@ public class EmployeeHelper {
 
 
     public static String entityToString(EmployeeEntity employeeEntity){
-        ObjectWriter objectMapper =  new ObjectMapper().writer().withDefaultPrettyPrinter();
+        ObjectMapper objectMapper =  new ObjectMapper();
         try {
             String json = objectMapper.writeValueAsString(employeeEntity);
-            logger.info("Given object Converted to Json : "+json);
+            logger.info(" Given object Converted to Json : "+json);
             return json;
         } catch (JsonProcessingException e) {
             logger.error(" Exception while converting object to json ");
