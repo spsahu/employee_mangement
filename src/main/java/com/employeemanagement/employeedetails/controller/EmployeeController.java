@@ -1,9 +1,13 @@
 package com.employeemanagement.employeedetails.controller;
 
 import com.employeemanagement.employeedetails.dto.EmployeeDto;
+import com.employeemanagement.employeedetails.dto.LoginResponse;
+import com.employeemanagement.employeedetails.dto.LoginUserDto;
+import com.employeemanagement.employeedetails.entity.UserEntity;
 import com.employeemanagement.employeedetails.helper.EmployeeHelper;
+import com.employeemanagement.employeedetails.service.AuthenticationService;
 import com.employeemanagement.employeedetails.service.EmployeeService;
-import com.jwt.authentication.auth_api.dto.RegisterUserDto;
+import com.employeemanagement.employeedetails.service.JwtService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +24,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
+@RequestMapping("/auth")
 public class EmployeeController {
     Logger logger = LoggerFactory.getLogger(EmployeeController.class);
 
@@ -29,7 +34,14 @@ public class EmployeeController {
     @Value("auth.api")
     private String authUrl;
 
+    private final JwtService jwtService;
 
+    private final AuthenticationService authenticationService;
+
+    public EmployeeController(JwtService jwtService, AuthenticationService authenticationService) {
+        this.jwtService = jwtService;
+        this.authenticationService = authenticationService;
+    }
     @GetMapping("/ping")
     public ResponseEntity<?> getPingTest(){
         return ResponseEntity.status(HttpStatus.OK).body("I am Alive!!");
@@ -39,14 +51,20 @@ public class EmployeeController {
     @PostMapping("/create-employee")
     public ResponseEntity<EmployeeDto> createEmployee(@RequestBody EmployeeDto employeeDto){
        logger.info( "Inside EmployeeController : "+ employeeDto );
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-        RegisterUserDto registerUserDto =new RegisterUserDto();
-        registerUserDto.setFullName(employeeDto.getEmpName());
-        registerUserDto.setEmail(employeeDto.getEmpMailId());
-        registerUserDto.setPassword(employeeDto.getEmpName().substring(0,3));
-        HttpEntity<RegisterUserDto> httpEntity = new HttpEntity<RegisterUserDto>(registerUserDto,httpHeaders);
-        ResponseEntity<String> stringResponseEntity = restTemplate.postForEntity(authUrl, httpEntity, String.class);
+
+        LoginUserDto loginUserDto = new LoginUserDto();
+
+        loginUserDto.setEmail(employeeDto.getEmpMailId());
+        loginUserDto.setPassword(employeeDto.getEmpName());
+
+        UserEntity authenticatedUser = authenticationService.authenticate(loginUserDto);
+
+        String jwtToken = jwtService.generateToken(authenticatedUser);
+
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(jwtToken);
+        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+
         EmployeeDto employeeDto1 = employeeService.saveEmployee(employeeDto);
         if(employeeDto1 != null)
         return new ResponseEntity<>( employeeDto1,HttpStatus.CREATED );
